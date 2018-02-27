@@ -1,0 +1,33 @@
+# Default values for storm.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+nimbus:
+  replicaCount: 1
+  image:
+    repository: storm
+    tag: 1.1.1
+    pullPolicy: IfNotPresent
+  service:
+    name: nimbus
+    port: 6627
+  resources:
+    limits:
+      cpu: 100m
+
+supervisor:
+  replicaCount: 1
+  image:
+    repository: storm
+    tag: 1.1.1
+    pullPolicy: IfNotPresent
+  service:
+    name: supervisor
+    port: 6700
+  resources:
+    limits:
+      cpu: 200m
+
+zookeeper:
+  enabled: true
+  service:
+    name: zookeeper

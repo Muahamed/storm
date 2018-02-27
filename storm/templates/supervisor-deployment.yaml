@@ -1,0 +1,36 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "storm.supervisor.fullname" . }}
+  labels:
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+spec:
+  replicas: {{ .Values.supervisor.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "storm.supervisor.fullname" . }}
+    spec:
+      initContainers:
+      - name: init-{{ template "storm.zookeeper.fullname" . }}
+        image: busybox
+        command: ["sh", "-c", "until nslookup {{ template "storm.zookeeper.fullname" . }}; do echo waiting for {{ template "storm.zookeeper.fullname" . }}; sleep 2; done;"]
+      - name: init-{{ template "storm.nimbus.fullname" . }}
+        image: busybox
+        command: ["sh", "-c", "until nslookup {{ template "storm.nimbus.fullname" . }}; do echo waiting for {{ template "storm.nimbus.fullname" . }}; sleep 2; done;"]
+      containers:
+      - name: {{ .Values.supervisor.service.name }}
+        image: "{{ .Values.supervisor.image.repository }}:{{ .Values.supervisor.image.tag }}"
+        imagePullPolicy: {{ .Values.supervisor.image.pullPolicy }}
+        command: ["storm", "supervisor"]
+        ports:
+        - hostPort: 6700
+          containerPort: 6700
+        - hostPort: 6701
+          containerPort: 6701
+        - hostPort: 6702
+          containerPort: 6702
+        - hostPort: 6703
+          containerPort: 6703
+        resources:
+{{ toYaml .Values.supervisor.resources | indent 10 }}
